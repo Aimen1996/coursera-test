@@ -1,0 +1,57 @@
+import numpy as np
+import lmdb
+from statsmodels.tsa.stattools import adfuller
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+
+support_used = 1
+start_support = 40
+
+test_size = 0.1
+
+min_time=34992
+max_time=39052
+
+def standarizeData(data): #z-score
+    a = np.mean(data)
+    b = np.std(data)
+    z = (data-a) / b
+    return z
+
+
+db_path = '/home/aimen/PycharmProjects/HydraulicSupport_pressure/'
+data = []
+for id in range(start_support, start_support + support_used):  ## append the data for support id
+    env = lmdb.open(db_path+ "support_id_lmdb" + str(id))
+    txn = env.begin(write=False)
+    temp = []
+    for sample_time in range(min_time, max_time):
+        data_value = txn.get(str(sample_time).encode())
+        temp.append(np.float32(float(data_value)))
+
+data.append(temp)
+data=standarizeData(temp)                #prepare the data using z-score
+# data=NormalizeData(temp)
+data=np.array(data)
+
+training_data = data[:-(round(len(data)*test_size))]
+testing_data=data[-(round(len(data)*test_size)):]
+
+#ploting data
+plt.figure(figsize=(10,6))
+plt.plot(data,'r')
+plt.show()
+
+#adf test
+result = adfuller(data[200:300])   #throw up non-stationary
+# result = adfuller(data[2000:2500])   #stationary
+print('ADF Statistic: %f' % result[0])
+print('p-value: %f' % result[1])
+print('Critical Values:')
+for key, value in result[4].items():
+    print('\t%s: %.3f' % (key, value))
+
+if result[0] < result[4]["5%"]:
+    print ("Reject Ho - Time Series is Stationary")
+else:
+    print ("Failed to Reject Ho - Time Series is Non-Stationary")
