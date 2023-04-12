@@ -19,8 +19,8 @@ data=np.array(temp)
 
 def Tstationarity(series, str):
 
-    # series['rolling_mean'] = series[str].rolling(window=12).mean()
-    # series['rolling_std'] = series[str].rolling(window=12).std()
+    series['rolling_mean'] = series[str].rolling(window=12).mean()
+    series['rolling_std'] = series[str].rolling(window=12).std()
     print(series.head(13))
 
     #performing adf test
@@ -40,8 +40,8 @@ def Tstationarity(series, str):
     #ploting
     plt.figure(figsize=(10, 6))
     plt.plot(series[str], 'r')
-    # plt.plot(series['rolling_mean'], 'b')
-    # plt.plot(series['rolling_std'], 'g')
+    plt.plot(series['rolling_mean'], 'b')
+    plt.plot(series['rolling_std'], 'g')
     plt.xlabel('Time [s]')
     plt.ylabel('pressure')
     plt.show()
@@ -102,6 +102,5 @@ pd_log2['logsqrtdiff']=pd_log2['log_sqrt']-pd_log2['log_sqrt'].shift()
 print(pd_log2.head())
 # Tstationarity(pd_log2.dropna(),'logsqrtdiff')
 
-#checking using z-score
-# data=standarizeData(temp)
+
 
